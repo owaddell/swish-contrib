@@ -160,17 +160,17 @@
   (define-syntax ! (lambda (x) (syntax-error x "invalid context for")))
 
   (define-syntax wire
-    (syntax-rules (unquote $ !)
+    (syntax-rules ($ !)
       [(_ gather) gather]
-      [(_ ,e0 next ...)
-       (relay e0 (spawn&link (lambda () (wire next ...))))]
       [(_ ($ e0 e1 ...) next ...)
        (make-pipeline-command #t `e0 `(e1 ...)
          (spawn&link (lambda () (wire next ...))))]
       [(_ (! e0 e1 ...) next ...)
        ;; to ignore exit code in a case like grep
        (make-pipeline-command #f `e0 `(e1 ...)
-         (spawn&link (lambda () (wire next ...))))]))
+         (spawn&link (lambda () (wire next ...))))]
+      [(_ e0 next ...)
+       (relay e0 (spawn&link (lambda () (wire next ...))))]))
 
   (define-syntax pipe
     (syntax-rules ()
@@ -187,15 +187,15 @@
 
 #!eof
 
-> (pipe ($ ls) ,string-upcase ($ grep .ORG$) ,string-length ,(lambda (n) (make-string n #\x)))
+> (pipe ($ ls) string-upcase ($ grep .ORG$) string-length (lambda (n) (make-string n #\x)))
 ("xxxxxxxxxx" "xxxxxxxxxxxxxxxxxxx" "xxxxxxxxx" "xxxxxxxxxxxxxx"
   "xxxxxxxxxxxx" "xxxxxxx" "xxxxxxxxxx"
   "xxxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxx" "xxxxxxxxxxxx"
   "xxxxxxxxxxxxxxxxxxxx" "xxxxxxxxxxx" "xxxxxxxxxxxxxxx"
   "xxxxxxxxxxxxxxxxxxx" "xxxxxxxxx" "xxxxxxxxxxx")
-> (pipe ,(format "foo ~a" self) ,string-upcase)
+> (pipe (format "foo ~a" self) string-upcase)
 ("FOO #<PROCESS :6>")
-> (pipe ($ ls) ($ grep "[.]ss$") ,string->list ,reverse ,list->string)
+> (pipe ($ ls) ($ grep "[.]ss$") string->list reverse list->string)
 ("ss.mb-gol-tla" "ss.tprecxe" "ss.bif" "ss.oof" "ss.huh" "ss.hcneb-oi"
   "ss.mb-gol" "ss.2pamp" "ss.emit-ehcac-tset" "ss.tset"
   "ss.rekcit")
