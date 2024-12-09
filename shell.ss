@@ -5,6 +5,7 @@
    $
    pipe
    shell:verbose
+   ;; TODO add input / output redirection
    )
   (import
    (scheme)
